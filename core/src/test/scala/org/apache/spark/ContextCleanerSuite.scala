@@ -183,6 +183,7 @@ class ContextCleanerSuite extends ContextCleanerSuiteBase {
 
     // Test that GC causes shuffle cleanup after dereferencing the RDD
     val postGCTester = new CleanerTester(sc, shuffleIds = Seq(0))
+    rdd.count() // GC in IBM JDK is smart enough to cleanup objects in advance, if there is no valid furture reference.
     rdd = null  // Make RDD out of scope, so that corresponding shuffle goes out of scope
     runGC()
     postGCTester.assertCleanup()
@@ -307,6 +308,7 @@ class SortShuffleContextCleanerSuite extends ContextCleanerSuiteBase(classOf[Sor
 
     // Test that GC causes shuffle cleanup after dereferencing the RDD
     val postGCTester = new CleanerTester(sc, shuffleIds = Seq(0))
+    rdd.count() // GC in IBM JDK is smart enough to cleanup objects in advance, if there is no valid furture reference.
     rdd = null  // Make RDD out of scope, so that corresponding shuffle goes out of scope
     runGC()
     postGCTester.assertCleanup()
