@@ -164,6 +164,7 @@ class ContextCleanerSuite extends ContextCleanerSuiteBase {
     }
 
     // Test that GC causes RDD cleanup after dereferencing the RDD
+    // Note rdd is used after previous GC to avoid early collection by the JVM
     val postGCTester = new CleanerTester(sc, rddIds = Seq(rdd.id))
     rdd = null // Make RDD out of scope
     runGC()
@@ -180,9 +181,9 @@ class ContextCleanerSuite extends ContextCleanerSuiteBase {
     intercept[Exception] {
       preGCTester.assertCleanup()(timeout(1000 millis))
     }
+    rdd.count()  // Defeat early collection by the JVM
 
     // Test that GC causes shuffle cleanup after dereferencing the RDD
-    rdd.count()  // Defeat any early collection of rdd variable by the JVM
     val postGCTester = new CleanerTester(sc, shuffleIds = Seq(0))
     rdd = null  // Make RDD out of scope, so that corresponding shuffle goes out of scope
     runGC()
@@ -200,6 +201,7 @@ class ContextCleanerSuite extends ContextCleanerSuiteBase {
     }
 
     // Test that GC causes broadcast cleanup after dereferencing the broadcast variable
+    // Note broadcast is used after previous GC to avoid early collection by the JVM
     val postGCTester = new CleanerTester(sc, broadcastIds = Seq(broadcast.id))
     broadcast = null  // Make broadcast variable out of scope
     runGC()
@@ -305,6 +307,7 @@ class SortShuffleContextCleanerSuite extends ContextCleanerSuiteBase(classOf[Sor
     intercept[Exception] {
       preGCTester.assertCleanup()(timeout(1000 millis))
     }
+    rdd.count()  // Defeat early collection by the JVM
 
     // Test that GC causes shuffle cleanup after dereferencing the RDD
     val postGCTester = new CleanerTester(sc, shuffleIds = Seq(0))
